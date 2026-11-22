@@ -1,0 +1,76 @@
+{
+  "contractVersion": "v1.2.0",
+  "dataset": "financial.payments.transactions_bronze",
+  "owner": "data-engineering@fintech-core.internal",
+  "sla": {
+    "freshnessMinutes": 15,
+    "availabilityPct": 99.95
+  },
+  "schema": {
+    "fields": [
+      {
+        "name": "transaction_id",
+        "type": "string",
+        "required": true,
+        "unique": true,
+        "description": "UUIDv4 unique transaction identifier"
+      },
+      {
+        "name": "timestamp",
+        "type": "timestamp",
+        "required": true,
+        "description": "Epoch timestamp of authorization event"
+      },
+      {
+        "name": "amount",
+        "type": "decimal(12,2)",
+        "required": true,
+        "range": {"min": 0.01, "max": 100000.00},
+        "description": "Gross authorized transaction currency amount"
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "enum": ["USD", "EUR", "GBP", "CAD"],
+        "required": true
+      },
+      {
+        "name": "card_type",
+        "type": "string",
+        "enum": ["VISA", "MASTERCARD", "AMEX"],
+        "required": true
+      },
+      {
+        "name": "fraud_label",
+        "type": "integer",
+        "enum": [0, 1],
+        "required": true
+      }
+    ]
+  },
+  "assertions": [
+    {
+      "type": "expect_column_values_to_not_be_null",
+      "column": "transaction_id",
+      "severity": "CRITICAL"
+    },
+    {
+      "type": "expect_column_values_to_be_unique",
+      "column": "transaction_id",
+      "severity": "CRITICAL"
+    },
+    {
+      "type": "expect_column_values_to_be_between",
+      "column": "amount",
+      "min": 0.01,
+      "max": 100000.00,
+      "severity": "HIGH"
+    },
+    {
+      "type": "expect_column_distinct_values_to_be_in_set",
+      "column": "fraud_label",
+      "set": [0, 1],
+      "severity": "CRITICAL"
+    }
+  ]
+}
